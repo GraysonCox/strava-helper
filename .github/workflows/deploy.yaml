@@ -1,0 +1,29 @@
+---
+
+name: Deploy
+
+"on": [workflow_dispatch]
+
+concurrency: strava-helper
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  STACK_NAME: strava-helper
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::840116000641:role/GitHub
+          aws-region: ${{env.AWS_REGION}}
+      - run: |
+          sam deploy \
+            --stack-name $STACK_NAME \
+            --region $AWS_REGION
