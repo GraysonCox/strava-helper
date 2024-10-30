@@ -2,7 +2,7 @@
 
 concurrency: ${{ github.event.repository.name }}
 
-name: Deploy
+name: Destroy
 
 "on":
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  destroy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -21,4 +21,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHub
           aws-region: ${{ secrets.AWS_REGION }}
-      - run: sam deploy --stack-name=${{ github.event.repository.name }}
+      - run: |
+          aws cloudformation delete-stack --stack-name=${{ github.event.repository.name }}
+          aws cloudformation wait stack-delete-complete --stack-name=${{ github.event.repository.name }}
