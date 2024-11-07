@@ -1,8 +1,43 @@
 ---
 
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  StravaClientId:
+    Type: String
+    NoEcho: true
+  StravaClientSecret:
+    Type: String
+    NoEcho: true
+  StravaVerifyToken:
+    Type: String
+    NoEcho: true
+    Default: a_string_used_for_authentication
+
 Resources:
-  LogGroup:
-    Type: AWS::Logs::LogGroup
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      LogGroupName: !Ref AWS::StackName
-      RetentionInDays: 90
+      TemplateURL: api.template.yaml
+      Parameters:
+        RootStackName: !Ref AWS::StackName
+        StravaVerifyToken: !Ref StravaVerifyToken
+
+  StravaSubscriptionCustomResourceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/strava_subscription_custom_resource_function/
+      Handler: main.lambda_handler
+      Runtime: python3.12
+      Timeout: 30
+
+  StravaSubscription:
+    Type: Custom::StravaSubscription
+    Properties:
+      ServiceTimeout: 10
+      ServiceToken: !GetAtt StravaSubscriptionCustomResourceFunction.Arn
+      CallbackUrl: !GetAtt ApiStack.Outputs.Url
+      StravaSubscriptionsUrl: https://www.strava.com/api/v3/push_subscriptions
+      ClientId: !Ref StravaClientId
+      ClientSecret: !Ref StravaClientSecret
+      VerifyToken: !Ref StravaVerifyToken

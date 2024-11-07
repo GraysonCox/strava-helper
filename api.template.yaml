@@ -1,0 +1,53 @@
+---
+
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  RootStackName:
+    Type: String
+  StravaVerifyToken:
+    Type: String
+
+Resources:
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Ref RootStackName
+      StageName: Prod
+
+  AuthenticateStravaSubscriptionApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/authenticate_strava_subscription_api_function/
+      Handler: main.lambda_handler
+      Runtime: python3.12
+      Timeout: 30
+      Environment:
+        Variables:
+          VERIFY_TOKEN: !Ref StravaVerifyToken
+      Events:
+        StravaWebhookApi:
+          Type: Api
+          Properties:
+            Path: /strava-event
+            Method: GET
+            RestApiId: !Ref Api
+
+  HandleStravaEventApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handle_strava_event_api_function/
+      Handler: main.lambda_handler
+      Runtime: python3.12
+      Timeout: 30
+      Events:
+        StravaWebhookApi:
+          Type: Api
+          Properties:
+            Path: /strava-event
+            Method: POST
+            RestApiId: !Ref Api
+
+Outputs:
+  Url:
+    Value: !Sub https://${Api}.execute-api.${AWS::Region}.amazonaws.com/Prod/strava-event

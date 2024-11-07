@@ -21,4 +21,9 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHub
           aws-region: ${{ secrets.AWS_REGION }}
-      - run: sam deploy --stack-name=${{ github.event.repository.name }}
+      - run: |
+          sam deploy \
+            --stack-name=${{ github.event.repository.name }} \
+            --parameter-overrides \
+              StravaClientId=${{ secrets.STRAVA_CLIENT_ID }} \
+              StravaClientSecret=${{ secrets.STRAVA_CLIENT_SECRET }}
