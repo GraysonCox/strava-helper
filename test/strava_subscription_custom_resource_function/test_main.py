@@ -149,12 +149,10 @@ def test_update_subscription_success(mock_http, http_response_code):
             call(
                 "DELETE",
                 f'{event["ResourceProperties"]["StravaSubscriptionsUrl"]}/420',
-                body=json.dumps(
-                    {
-                        "client_id": event["ResourceProperties"]["ClientId"],
-                        "client_secret": event["ResourceProperties"]["ClientSecret"],
-                    }
-                ),
+                fields={
+                    "client_id": event["ResourceProperties"]["ClientId"],
+                    "client_secret": event["ResourceProperties"]["ClientSecret"],
+                },
             ),
             call(
                 "POST",
@@ -209,12 +207,10 @@ def test_delete_subscription_success(mock_http, http_response_code):
             call(
                 "DELETE",
                 f'{event["ResourceProperties"]["StravaSubscriptionsUrl"]}/420',
-                body=json.dumps(
-                    {
-                        "client_id": event["ResourceProperties"]["ClientId"],
-                        "client_secret": event["ResourceProperties"]["ClientSecret"],
-                    }
-                ),
+                fields={
+                    "client_id": event["ResourceProperties"]["ClientId"],
+                    "client_secret": event["ResourceProperties"]["ClientSecret"],
+                },
             ),
             call(
                 "PUT",
@@ -279,12 +275,10 @@ def test_delete_subscription_failure(mock_http, http_response_code):
             call(
                 "DELETE",
                 f'{event["ResourceProperties"]["StravaSubscriptionsUrl"]}/420',
-                body=json.dumps(
-                    {
-                        "client_id": event["ResourceProperties"]["ClientId"],
-                        "client_secret": event["ResourceProperties"]["ClientSecret"],
-                    }
-                ),
+                fields={
+                    "client_id": event["ResourceProperties"]["ClientId"],
+                    "client_secret": event["ResourceProperties"]["ClientSecret"],
+                },
             ),
             call(
                 "PUT",

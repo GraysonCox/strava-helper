@@ -48,14 +48,14 @@ def __delete_subscription(event) -> None:
     LOGGER.info("Deleting subscription %s ...", event["PhysicalResourceId"])
 
     url = f"{event['ResourceProperties']['StravaSubscriptionsUrl']}/{event['PhysicalResourceId']}"
-    data = {
+    query_parameters = {
         "client_id": event["ResourceProperties"]["ClientId"],
         "client_secret": event["ResourceProperties"]["ClientSecret"],
     }
     response = HTTP.request(
         "DELETE",
         url,
-        body=json.dumps(data),
+        fields=query_parameters,
     )
 
     if response.status not in range(200, 300):
