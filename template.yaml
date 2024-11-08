@@ -6,9 +6,6 @@ Parameters:
   StravaClientId:
     Type: String
     NoEcho: true
-  StravaClientId:
-    Type: String
-    NoEcho: true
   StravaClientSecret:
     Type: String
     NoEcho: true
