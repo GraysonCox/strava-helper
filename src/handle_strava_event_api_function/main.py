@@ -17,12 +17,11 @@ def lambda_handler(event, _) -> dict:
         if strava_event["object_type"] != "activity":
             return {"statusCode": 200, "body": json.dumps({"status": "success"})}
 
-        if not strava_event["commute"]:
-            return {"statusCode": 200, "body": json.dumps({"status": "success"})}
-
         LOGGER.info("The event is a commute activity and will now be hidden.")
         auth_token = strava_service.get_auth_token()
         activity = strava_service.get_activity(strava_event["object_id"], auth_token)
+        if not activity["commute"]:
+            return {"statusCode": 200, "body": json.dumps({"status": "success"})}
         activity["hide_from_home"] = True
         activity["description"] = (
             "This commute was automatically hidden by my shitty AWS project."
