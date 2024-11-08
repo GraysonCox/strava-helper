@@ -9,12 +9,16 @@ Parameters:
     Type: String
   StravaClientId:
     Type: String
+    NoEcho: true
   StravaClientSecret:
     Type: String
+    NoEcho: true
   StravaRefreshToken:
     Type: String
+    NoEcho: true
   StravaVerifyToken:
     Type: String
+    NoEcho: true
 
 Resources:
   Api:
