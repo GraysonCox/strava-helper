@@ -14,7 +14,12 @@ def lambda_handler(event, _) -> dict:
 
         strava_event = json.loads(event["body"])
 
-        if strava_event["object_type"] != "activity":
+        if any(
+            [
+                strava_event["aspect_type"] != "create",
+                strava_event["object_type"] != "activity",
+            ]
+        ):
             return {"statusCode": 200, "body": json.dumps({"status": "success"})}
 
         auth_token = strava_service.get_auth_token()
