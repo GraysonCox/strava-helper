@@ -10,7 +10,9 @@ HTTP = urllib3.PoolManager()
 def __send_http_request(
     method: str, url: str, body: Optional[dict] = None, headers: Optional[dict] = None
 ):
-    response = HTTP.request(method, url, body=json.dumps(body), headers=headers)
+    response = HTTP.request(
+        method, url, body=json.dumps(body) if body else None, headers=headers
+    )
 
     if response.status not in range(200, 300):
         raise Exception(
@@ -41,7 +43,9 @@ def get_activity(activity_id: int, auth_token: str) -> dict:
     return __send_http_request(
         "GET",
         f"{os.environ['STRAVA_API_URL']}/activities/{activity_id}",
-        headers={"Authorization": f"Bearer {auth_token}"},
+        headers={
+            "Authorization": f"Bearer {auth_token}",
+        },
     )
 
 
@@ -59,5 +63,8 @@ def update_activity(activity: dict, auth_token: str) -> dict:
             "sport_type": activity["sport_type"],
             "gear_id": activity["gear_id"],
         },
-        headers={"Authorization": f"Bearer {auth_token}"},
+        headers={
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json",
+        },
     )
