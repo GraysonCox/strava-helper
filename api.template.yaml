@@ -5,8 +5,20 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   RootStackName:
     Type: String
+  StravaApiUrl:
+    Type: String
+  StravaClientId:
+    Type: String
+    NoEcho: true
+  StravaClientSecret:
+    Type: String
+    NoEcho: true
+  StravaRefreshToken:
+    Type: String
+    NoEcho: true
   StravaVerifyToken:
     Type: String
+    NoEcho: true
 
 Resources:
   Api:
@@ -40,6 +52,12 @@ Resources:
       Handler: main.lambda_handler
       Runtime: python3.12
       Timeout: 30
+      Environment:
+        Variables:
+          STRAVA_API_URL: !Ref StravaApiUrl
+          STRAVA_CLIENT_ID: !Ref StravaClientId
+          STRAVA_CLIENT_SECRET: !Ref StravaClientSecret
+          STRAVA_REFRESH_TOKEN: !Ref StravaRefreshToken
       Events:
         StravaWebhookApi:
           Type: Api

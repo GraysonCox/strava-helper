@@ -26,4 +26,5 @@ jobs:
             --stack-name=${{ github.event.repository.name }} \
             --parameter-overrides \
               StravaClientId=${{ secrets.STRAVA_CLIENT_ID }} \
-              StravaClientSecret=${{ secrets.STRAVA_CLIENT_SECRET }}
+              StravaClientSecret=${{ secrets.STRAVA_CLIENT_SECRET }} \
+              StravaRefreshToken=${{ secrets.STRAVA_REFRESH_TOKEN }}

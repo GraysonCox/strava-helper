@@ -9,6 +9,9 @@ Parameters:
   StravaClientSecret:
     Type: String
     NoEcho: true
+  StravaRefreshToken:
+    Type: String
+    NoEcho: true
   StravaVerifyToken:
     Type: String
     NoEcho: true
@@ -21,6 +24,10 @@ Resources:
       TemplateURL: api.template.yaml
       Parameters:
         RootStackName: !Ref AWS::StackName
+        StravaApiUrl: https://www.strava.com/api/v3
+        StravaClientId: !Ref StravaClientId
+        StravaClientSecret: !Ref StravaClientSecret
+        StravaRefreshToken: !Ref StravaRefreshToken
         StravaVerifyToken: !Ref StravaVerifyToken
 
   StravaSubscriptionCustomResourceFunction:
