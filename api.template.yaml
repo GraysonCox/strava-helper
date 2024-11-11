@@ -30,8 +30,8 @@ Resources:
   AuthenticateStravaSubscriptionApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/authenticate_strava_subscription_api_function/
-      Handler: main.lambda_handler
+      CodeUri: src/
+      Handler: authenticate_strava_subscription_api_function.main.lambda_handler
       Runtime: python3.12
       Timeout: 30
       Environment:
@@ -48,8 +48,8 @@ Resources:
   HandleStravaEventApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/handle_strava_event_api_function/
-      Handler: main.lambda_handler
+      CodeUri: src/
+      Handler: handle_strava_event_api_function.main.lambda_handler
       Runtime: python3.12
       Timeout: 30
       Environment:
