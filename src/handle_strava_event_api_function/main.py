@@ -1,7 +1,7 @@
 import json
 import logging
 
-from src.handle_strava_event_api_function import strava_service
+from handle_strava_event_api_function import strava_service
 
 
 LOGGER = logging.getLogger(__name__)
