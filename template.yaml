@@ -37,14 +37,16 @@ Resources:
       Handler: strava_subscription_custom_resource_function.main.lambda_handler
       Runtime: python3.12
       Timeout: 30
+      Environment:
+        Variables:
+          API_CALLBACK_URL: !GetAtt ApiStack.Outputs.Url
+          STRAVA_API_URL: https://www.strava.com/api/v3
+          STRAVA_VERIFY_TOKEN: !Ref StravaVerifyToken
 
   StravaSubscription:
     Type: Custom::StravaSubscription
     Properties:
       ServiceTimeout: 10
       ServiceToken: !GetAtt StravaSubscriptionCustomResourceFunction.Arn
-      CallbackUrl: !GetAtt ApiStack.Outputs.Url
-      StravaSubscriptionsUrl: https://www.strava.com/api/v3/push_subscriptions
       ClientId: !Ref StravaClientId
       ClientSecret: !Ref StravaClientSecret
-      VerifyToken: !Ref StravaVerifyToken

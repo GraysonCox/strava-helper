@@ -1,41 +1,20 @@
-import json
 import logging
-import urllib3
 
+from strava_subscription_custom_resource_function import cfn_service, strava_service
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
-
-HTTP = urllib3.PoolManager()
 
 
 def __create_subscription(event) -> dict:
     LOGGER.info("Creating subscription ...")
 
-    url = event["ResourceProperties"]["StravaSubscriptionsUrl"]
-    body = json.dumps(
-        {
-            "client_id": event["ResourceProperties"]["ClientId"],
-            "client_secret": event["ResourceProperties"]["ClientSecret"],
-            "callback_url": event["ResourceProperties"]["CallbackUrl"],
-            "verify_token": event["ResourceProperties"]["VerifyToken"],
-        }
-    )
-    response = HTTP.request(
-        "POST",
-        url,
-        body=body,
-        headers={
-            "Content-Type": "application/json",
-        },
+    subscription_id = strava_service.create_subscription(
+        event["ResourceProperties"]["ClientId"],
+        event["ResourceProperties"]["ClientSecret"],
     )
 
-    if response.status not in range(200, 300):
-        raise Exception(
-            f"Request failed: {response.status} - {response.data.decode('utf-8')}"
-        )
-
-    return {"SubscriptionId": str(json.loads(response.data.decode("utf-8"))["id"])}
+    return {"SubscriptionId": str(subscription_id)}
 
 
 def __delete_subscription(event) -> None:
@@ -46,48 +25,11 @@ def __delete_subscription(event) -> None:
         return
 
     LOGGER.info("Deleting subscription %s ...", event["PhysicalResourceId"])
-
-    url = f"{event['ResourceProperties']['StravaSubscriptionsUrl']}/{event['PhysicalResourceId']}"
-    query_parameters = {
-        "client_id": event["ResourceProperties"]["ClientId"],
-        "client_secret": event["ResourceProperties"]["ClientSecret"],
-    }
-    response = HTTP.request(
-        "DELETE",
-        url,
-        fields=query_parameters,
+    strava_service.delete_subscription(
+        event["Data"]["SubscriptionId"],
+        event["ResourceProperties"]["ClientId"],
+        event["ResourceProperties"]["ClientSecret"],
     )
-
-    if response.status not in range(200, 300):
-        raise Exception(
-            f"Request failed: {response.status} - {response.data.decode('utf-8')}"
-        )
-
-
-def __send_cfn_response(event, status, reason, data) -> None:
-    LOGGER.info("Sending CloudFormation response with status %s ...", status)
-
-    url = event["ResponseURL"]
-    body = {
-        "Status": status,
-        "Reason": reason,
-        "PhysicalResourceId": data.get("SubscriptionId", "N/A"),
-        "StackId": event["StackId"],
-        "RequestId": event["RequestId"],
-        "LogicalResourceId": event["LogicalResourceId"],
-        "Data": data,
-    }
-    encoded_body = json.dumps(body).encode("utf-8")
-    response = HTTP.request(
-        "PUT",
-        url,
-        body=encoded_body,
-    )
-
-    if response.status not in range(200, 300):
-        raise Exception(
-            f"Failed to send CloudFormation response: {response.status} - {response.data.decode('utf-8')}"
-        )
 
 
 def lambda_handler(event, _):
@@ -96,17 +38,32 @@ def lambda_handler(event, _):
 
         request_type = event["RequestType"]
         if request_type == "Create":
-            cfn_response_data = __create_subscription(event)
+            cfn_outputs = __create_subscription(event)
         elif request_type == "Update":
             __delete_subscription(event)
-            cfn_response_data = __create_subscription(event)
+            cfn_outputs = __create_subscription(event)
         elif request_type == "Delete":
             __delete_subscription(event)
-            cfn_response_data = {}
+            cfn_outputs = {}
         else:
-            cfn_response_data = {}
+            cfn_outputs = {}
 
-        __send_cfn_response(event, "SUCCESS", "Everything worked.", cfn_response_data)
+        cfn_service.send_successful_response(
+            event["ResponseURL"],
+            logical_resource_id=event["LogicalResourceId"],
+            physical_resource_id=cfn_outputs.get("SubscriptionId", "N/A"),
+            stack_id=event["StackId"],
+            request_id=event["RequestId"],
+            data=cfn_outputs,
+        )
+
     except Exception as e:
         LOGGER.exception("There was a failure.")
-        __send_cfn_response(event, "FAILED", str(e), {})
+        cfn_service.send_failed_response(
+            event["ResponseURL"],
+            logical_resource_id=event["LogicalResourceId"],
+            physical_resource_id="N/A",
+            stack_id=event["StackId"],
+            request_id=event["RequestId"],
+            reason=str(e),
+        )
