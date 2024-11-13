@@ -1,15 +1,13 @@
 import json
 import os
 import pytest
-import random
-import string
 from unittest.mock import patch, MagicMock
+from faker import Faker
 
 from src.handle_strava_event_api_function import strava_service
 
 
-def __random_string():
-    return "".join(random.choice(string.ascii_letters) for _ in range(10))
+FAKER = Faker()
 
 
 def __mock_http_response(status: int, data: dict) -> MagicMock:
@@ -22,14 +20,13 @@ def __mock_http_response(status: int, data: dict) -> MagicMock:
 @pytest.fixture(autouse=True)
 def mock_os_environ():
     env_vars = {
-        "STRAVA_API_URL": f"https://{__random_string()}",
+        "STRAVA_API_URL": f"https://{FAKER.name()}",
         "STRAVA_CLIENT_ID": str(1),
-        "STRAVA_CLIENT_SECRET": __random_string(),
-        "STRAVA_REFRESH_TOKEN": __random_string(),
+        "STRAVA_CLIENT_SECRET": FAKER.name(),
+        "STRAVA_REFRESH_TOKEN": FAKER.name(),
     }
-
-    with patch.dict(os.environ, env_vars, clear=True):
-        yield env_vars
+    with patch.dict(os.environ, env_vars, clear=True) as mock:
+        yield mock
 
 
 @pytest.fixture
@@ -40,7 +37,7 @@ def mock_http():
 
 @pytest.mark.parametrize("http_response_code", [200, 201, 202, 203, 204, 299])
 def test_get_auth_token_succeeds(mock_os_environ, mock_http, http_response_code):
-    the_auth_token = __random_string()
+    the_auth_token = FAKER.name()
     mock_http.request.return_value = __mock_http_response(
         http_response_code, {"access_token": the_auth_token}
     )
@@ -82,7 +79,7 @@ def test_get_auth_token_fails(mock_http, http_response_code):
 @pytest.mark.parametrize("http_response_code", [200, 201, 202, 203, 204, 299])
 def test_get_activity_succeeds(mock_os_environ, mock_http, http_response_code):
     given_activity_id = 1
-    given_auth_token = __random_string()
+    given_auth_token = FAKER.name()
     the_activity = {"some": "activity"}
     mock_http.request.return_value = __mock_http_response(
         http_response_code, the_activity
@@ -104,7 +101,7 @@ def test_get_activity_succeeds(mock_os_environ, mock_http, http_response_code):
 @pytest.mark.parametrize("http_response_code", [100, 300, 400])
 def test_get_activity_fails(mock_http, http_response_code):
     given_activity_id = 1
-    given_auth_token = __random_string()
+    given_auth_token = FAKER.name()
     the_error_data = {"message": "some message"}
     mock_http.request.return_value = __mock_http_response(
         http_response_code, the_error_data
@@ -130,7 +127,7 @@ def test_update_activity_succeeds(mock_os_environ, mock_http, http_response_code
         "sport_type": "hmm",
         "gear_id": "yuh",
     }
-    given_auth_token = __random_string()
+    given_auth_token = FAKER.name()
     mock_http.request.return_value = __mock_http_response(
         http_response_code, given_activity
     )
@@ -173,7 +170,7 @@ def test_update_activity_fails(mock_http, http_response_code):
         "sport_type": "hmm",
         "gear_id": "yuh",
     }
-    given_auth_token = __random_string()
+    given_auth_token = FAKER.name()
     the_error_data = {"message": "some message"}
     mock_http.request.return_value = __mock_http_response(
         http_response_code, the_error_data
